@@ -13,7 +13,7 @@ class MovieItem(BaseModel):
 
 class RecommendRequest(BaseModel):
     title: str
-    year: int | None = None
+    year: int | None = Field(default=None, ge=1900, le=2030)
     limit: int = Field(default=10, ge=1, le=50)
 
 class RecommendationMovieItem(MovieItem):

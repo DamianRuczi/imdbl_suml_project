@@ -3,5 +3,7 @@ __pycache__/
 *.py[cod]
 *.pyo
 .env
-data/raw/
 model/artifacts/
+data/raw/*.csv
+data/raw/*.feather
+data/processed/

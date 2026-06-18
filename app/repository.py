@@ -1,15 +1,27 @@
 """Warstwa repozytorium: źródło danych dla rekomendacji.
 
-OBECNIE zwraca dane atrapowe (mocki), aby branch API ruszył zanim powstanie
-wytrenowany model. Docelowo każda metoda załaduje i odpyta realny
-`model.recommender.ContentRecommender` – miejsca podmiany oznaczone `# TODO`.
+Przy starcie próbuje wczytać wytrenowany ContentRecommender
+z model/artifacts/recommender.pkl.
 
-Repozytorium operuje na prostych słownikach; mapowanie na DTO należy do
-warstwy serwisu.
+Jeśli plik nie istnieje (model jeszcze nie wytrenowany), repozytorium
+działa na danych atrapowych i loguje ostrzeżenie, gdy API odpowiada normalnie
+z danymi mock zamiast crashować.
 """
 
 from __future__ import annotations
 
+import logging
+import pathlib
+
+from app.exceptions import RecommenderUnavailableError
+
+logger = logging.getLogger(__name__)
+
+_MODEL_PATH = (
+    pathlib.Path(__file__).parent.parent / "model" / "artifacts" / "recommender.pkl"
+)
+
+# Dane mock (fallback gdy model nie jest wytrenowany)
 _MOCK_CATALOG = [
     {"title": "Inception", "year": 2010},
     {"title": "The Matrix", "year": 1999},
@@ -38,11 +50,46 @@ _MOCK_RECOMMENDATIONS = [
 ]
 
 
-class RecommenderRepository:
-    def list_movies(self) -> list[dict]:
-        # TODO: zwrócić recommender.list_movies() po podpięciu modelu.
+def _try_load_recommender():
+    """Próbuje wczytać model; zwraca instancję lub None."""
+    try:
+        from model.recommender import ContentRecommender
+        recommender = ContentRecommender.load(_MODEL_PATH)
+        logger.info("ContentRecommender wczytany z %s", _MODEL_PATH)
+        return recommender
+    except FileNotFoundError:
+        logger.warning(
+            "Artefakty modelu nie istnieją (%s). "
+            "Używam danych mock. Uruchom `python model/train.py` aby wytrenować model.",
+            _MODEL_PATH,
+        )
+        return None
+    except Exception as exc:
+        logger.error("Błąd wczytywania modelu: %s. Używam danych mock.", exc)
+        return None
 
-        return list(_MOCK_CATALOG)
+
+class RecommenderRepository:
+    """Repozytorium danych dla serwisu rekomendacji.
+
+    Przy inicjalizacji próbuje załadować wytrenowany model.
+    Jeśli model niedostępny, transparentnie przełącza się na dane mock.
+    """
+
+    def __init__(self) -> None:
+        self._recommender = _try_load_recommender()
+        self._using_mock: bool = self._recommender is None
+
+    @property
+    def using_mock(self) -> bool:
+        """True jeśli model nie jest dostępny i aplikacja używa danych mock."""
+        return self._using_mock
+
+    def list_movies(self) -> list[dict]:
+        """Zwróć listę wszystkich filmów."""
+        if self._using_mock:
+            return list(_MOCK_CATALOG)
+        return self._recommender.list_movies()
 
     def recommend(
         self,
@@ -50,6 +97,26 @@ class RecommenderRepository:
         top_k: int,
         year: int | None = None,
     ) -> list[dict] | None:
-        # TODO: załadować model (recommender.load) i zwrócić recommender.recommend(title, top_k, year).to_dict("records").
-        return list(_MOCK_RECOMMENDATIONS[:top_k])
+        """Zwróć rekomendacje dla podanego tytułu.
 
+        Returns:
+            Lista słowników z polami: title, year, genres, rating, score.
+            None jeśli tytułu nie ma w bazie.
+
+        Raises:
+            RecommenderUnavailableError: Jeśli model jest niedostępny
+                                         i żądanie nie może być obsłużone przez mock.
+        """
+        if self._using_mock:
+            # Mock zawsze zwraca wyniki (ignoruje title)
+            return list(_MOCK_RECOMMENDATIONS[:top_k])
+
+        result_df = self._recommender.recommend(
+            title=title,
+            top_k=top_k,
+            year=year,
+        )
+        if result_df is None:
+            return None
+
+        return result_df.to_dict("records")
