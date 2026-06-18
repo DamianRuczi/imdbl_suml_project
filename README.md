@@ -17,8 +17,7 @@ reżysera, obsady i opisu — bez potrzeby historii użytkownika.
 .
 ├── app/          # Warstwa API (FastAPI)
 ├── data/         # Preprocessing i EDA
-│   ├── raw/      # Surowy dataset (nie w repo – patrz niżej)
-│   └── eda.ipynb # Analiza eksploracyjna danych
+│   └── raw/      # Surowy dataset (nie w repo – patrz niżej)
 ├── model/        # Model rekomendacji
 │   ├── recommender.py  # Klasa ContentRecommender
 │   └── train.py        # Skrypt trenowania
