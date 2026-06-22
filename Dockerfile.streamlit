@@ -1,0 +1,14 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements-streamlit.txt .
+RUN pip install --no-cache-dir -r requirements-streamlit.txt
+
+# Streamlit potrzebuje tylko warstwy app/ (klient HTTP do API)
+COPY app/__init__.py app/__init__.py
+COPY app/streamlit_app.py app/streamlit_app.py
+
+EXPOSE 8501
+
+CMD ["streamlit", "run", "app/streamlit_app.py", "--server.port=8501", "--server.address=0.0.0.0"]

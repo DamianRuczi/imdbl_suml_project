@@ -10,6 +10,7 @@ help:
 	@echo "  make docker-up - Uruchomienie przez Docker Compose"
 	@echo "  make docker-down - Zatrzymanie kontenerów"
 	@echo "  make lint - Sprawdzenie jakości kodu (pylint)"
+	@echo "  make streamlit - Uruchomienie interfejsu użytkownika (Streamlit)"
 	@echo ""
 	@echo "Wymaganie wstępne: umieść final_dataset.parquet w data/raw/"
 	@echo ""
@@ -31,3 +32,6 @@ docker-down:
 
 lint:
 	pylint app/ model/ data/preprocessing.py --fail-under=8
+
+streamlit:
+	streamlit run app/streamlit_app.py
