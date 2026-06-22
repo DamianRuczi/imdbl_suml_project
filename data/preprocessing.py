@@ -1,3 +1,5 @@
+"""Wczytywanie i czyszczenie surowego datasetu IMDB."""
+
 from __future__ import annotations
 
 import pathlib

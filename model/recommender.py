@@ -1,3 +1,5 @@
+"""Content-based rekomendator filmowy (TF-IDF + cosine similarity)."""
+
 from __future__ import annotations
 
 import pathlib
