@@ -1,3 +1,5 @@
+"""Punkt wejścia aplikacji FastAPI – definicje endpointów."""
+
 from __future__ import annotations
 
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -15,6 +17,7 @@ app = FastAPI(
 
 @app.get("/health")
 def health() -> dict:
+    """Sprawdzenie statusu aplikacji (liveness check)."""
     return {"status": "ok"}
 
 
@@ -22,6 +25,7 @@ def health() -> dict:
 def list_movies(
     service: RecommendationService = Depends(get_recommendation_service),
 ) -> list[MovieItem]:
+    """Zwraca listę wszystkich filmów dostępnych w bazie."""
     return service.list_movies()
 
 
@@ -30,6 +34,7 @@ def recommend(
     request: RecommendRequest,
     service: RecommendationService = Depends(get_recommendation_service),
 ) -> RecommendResponse:
+    """Zwraca filmy podobne do podanego tytułu."""
     try:
         return service.recommend(request)
     except MovieNotFoundError as error:

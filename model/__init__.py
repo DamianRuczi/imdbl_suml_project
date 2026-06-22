@@ -1,1 +1,1 @@
-# TODO Model implementation
+"""Pakiet modelu: ContentRecommender oraz skrypt trenowania."""

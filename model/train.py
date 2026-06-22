@@ -1,20 +1,36 @@
+"""Skrypt trenowania rekomendatora filmowego.
+
+Kolejność kroków:
+    1. Preprocessing surowych danych (jeśli brakuje pliku .parquet).
+    2. Wczytanie przetworzonych danych.
+    3. Trening ContentRecommender.
+    4. Zapis modelu do model/artifacts/recommender.pkl.
+
+Uruchomienie:
+    python model/train.py
+
+Wymagania wstępne:
+    data/raw/final_dataset.parquet musi istnieć (zawarty w repo).
+"""
+
 from __future__ import annotations
 
 import sys
 import pathlib
 import time
 
-# Umożliwia importy z katalogu głównego projektu
+# Umożliwia importy z katalogu głównego projektu.
+# Import musi nastąpić PO modyfikacji sys.path, stąd disable poniżej.
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 
-from data.preprocessing import (
+from data.preprocessing import (  # noqa: E402  pylint: disable=wrong-import-position
     PROCESSED_DIR,
     load_raw,
     load_processed,
     preprocess,
     save_processed,
 )
-from model.recommender import ContentRecommender
+from model.recommender import ContentRecommender  # pylint: disable=wrong-import-position
 
 
 def _ensure_processed_data() -> None:

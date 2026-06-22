@@ -4,8 +4,11 @@ Przy starcie próbuje wczytać wytrenowany ContentRecommender
 z model/artifacts/recommender.pkl.
 
 Jeśli plik nie istnieje (model jeszcze nie wytrenowany), repozytorium
-działa na danych atrapowych i loguje ostrzeżenie, gdy API odpowiada normalnie
-z danymi mock zamiast crashować.
+działa na danych atrapowych i loguje ostrzeżenie
+API odpowiada normalnie z danymi mock zamiast crashować.
+
+Aby aktywować prawdziwy model:
+    python model/train.py
 """
 
 from __future__ import annotations
@@ -13,15 +16,13 @@ from __future__ import annotations
 import logging
 import pathlib
 
-from app.exceptions import RecommenderUnavailableError
-
 logger = logging.getLogger(__name__)
 
 _MODEL_PATH = (
     pathlib.Path(__file__).parent.parent / "model" / "artifacts" / "recommender.pkl"
 )
 
-# Dane mock (fallback gdy model nie jest wytrenowany)
+# Dane atrapowe (fallback gdy model nie jest wytrenowany)
 _MOCK_CATALOG = [
     {"title": "Inception", "year": 2010},
     {"title": "The Matrix", "year": 1999},
@@ -53,7 +54,8 @@ _MOCK_RECOMMENDATIONS = [
 def _try_load_recommender():
     """Próbuje wczytać model; zwraca instancję lub None."""
     try:
-        from model.recommender import ContentRecommender
+        # Import lokalnie, żeby uniknąć cyklicznych importów
+        from model.recommender import ContentRecommender  # pylint: disable=import-outside-toplevel
         recommender = ContentRecommender.load(_MODEL_PATH)
         logger.info("ContentRecommender wczytany z %s", _MODEL_PATH)
         return recommender
@@ -64,7 +66,7 @@ def _try_load_recommender():
             _MODEL_PATH,
         )
         return None
-    except Exception as exc:
+    except Exception as exc:  # pylint: disable=broad-except
         logger.error("Błąd wczytywania modelu: %s. Używam danych mock.", exc)
         return None
 
@@ -73,7 +75,7 @@ class RecommenderRepository:
     """Repozytorium danych dla serwisu rekomendacji.
 
     Przy inicjalizacji próbuje załadować wytrenowany model.
-    Jeśli model niedostępny, transparentnie przełącza się na dane mock.
+    Jeśli model niedostępny transparentnie przełącza się na dane mock.
     """
 
     def __init__(self) -> None:
@@ -82,7 +84,7 @@ class RecommenderRepository:
 
     @property
     def using_mock(self) -> bool:
-        """True jeśli model nie jest dostępny i aplikacja używa danych mock."""
+        """True jeśli model nie jest dostępny i używamy danych mock."""
         return self._using_mock
 
     def list_movies(self) -> list[dict]:
@@ -102,13 +104,9 @@ class RecommenderRepository:
         Returns:
             Lista słowników z polami: title, year, genres, rating, score.
             None jeśli tytułu nie ma w bazie.
-
-        Raises:
-            RecommenderUnavailableError: Jeśli model jest niedostępny
-                                         i żądanie nie może być obsłużone przez mock.
         """
         if self._using_mock:
-            # Mock zawsze zwraca wyniki (ignoruje title)
+            # Mock zawsze zwraca wyniki (ignoruje title) – przydatne do testów API
             return list(_MOCK_RECOMMENDATIONS[:top_k])
 
         result_df = self._recommender.recommend(

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import pathlib
-import re
+import ast
 
 import pandas as pd
 
@@ -17,24 +17,32 @@ _RATING_MAX = 10.0
 
 
 def _parse_list_string(value) -> str:
-    """Konwertuje string z listą na czysty tekst.
+    """Konwertuje string z listą Pythona na czysty tekst.
 
-    Przykład: "['Drama', 'Musical']" -> "Drama, Musical"
+    Używa ast.literal_eval (nie regex!) ponieważ nazwiska z apostrofem
+    (np. "O'Brien") powodują, że Python zapisuje je w podwójnych cudzysłowach.
+
+    Przykład: "['Drama', \"O'Brien\"]" -> "Drama, O'Brien"
     """
     if pd.isna(value):
         return ""
-    tokens = re.findall(r"'([^']+)'", str(value))
-    return ", ".join(tokens) if tokens else str(value).strip()
+    try:
+        tokens = ast.literal_eval(str(value))
+    except (ValueError, SyntaxError):
+        return str(value).strip()
+    if not isinstance(tokens, list):
+        return str(value).strip()
+    return ", ".join(str(t).strip() for t in tokens if str(t).strip())
 
 
 def load_raw(filename: str = "final_dataset.parquet") -> pd.DataFrame:
-    """Wczytaj surowy plik z katalogu data/raw/
+    """Wczytaj surowy plik z katalogu data/raw/.
 
     Args:
         filename: Domyślnie final_dataset.parquet
 
     Raises:
-        FileNotFoundError: Jeśli plik nie istnieje
+        FileNotFoundError: Jeśli plik nie istnieje.
     """
     path = RAW_DIR / filename
     if not path.exists():
@@ -77,7 +85,7 @@ def preprocess(df: pd.DataFrame) -> pd.DataFrame:
     df["rating"] = pd.to_numeric(df["rating"], errors="coerce")
     df = df[df["rating"].between(_RATING_MIN, _RATING_MAX)]
 
-    # Parsowanie list-stringów: ['Drama', 'Musical'] → Drama, Musical
+    # Parsowanie list-stringów: ['Drama', 'Musical'] -> Drama, Musical
     for col in ["genres", "directors", "stars"]:
         if col in df.columns:
             df[col] = df[col].apply(_parse_list_string)
@@ -93,10 +101,10 @@ def preprocess(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def load_processed(filename: str = "movies_clean.parquet") -> pd.DataFrame:
-    """Wczytaj przetworzone dane z data/processed/
+    """Wczytaj przetworzone dane z data/processed/.
 
     Raises:
-        FileNotFoundError: Jeśli przetworzone dane nie istnieją
+        FileNotFoundError: Jeśli przetworzone dane nie istnieją.
     """
     path = PROCESSED_DIR / filename
     if not path.exists():
@@ -106,23 +114,18 @@ def load_processed(filename: str = "movies_clean.parquet") -> pd.DataFrame:
     return df
 
 
-def save_processed(df: pd.DataFrame, filename: str = "movies_clean.parquet") -> None:
+def save_processed(
+    df: pd.DataFrame, filename: str = "movies_clean.parquet"
+) -> None:
     """Zapisz DataFrame do data/processed/ jako Parquet."""
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
     path = PROCESSED_DIR / filename
     df.to_parquet(path, index=False)
     size_kb = path.stat().st_size / 1024
-    print(f"{len(df):,} filmów zapisano → {path}  ({size_kb:.0f} KB)")
+    print(f"{len(df):,} filmów zapisano -> {path}  ({size_kb:.0f} KB)")
 
 
 if __name__ == "__main__":
     raw_df = load_raw()
     clean_df = preprocess(raw_df)
     save_processed(clean_df)
-
-    print(clean_df.head())
-    print(f"Kolumny: {list(clean_df.columns)}")
-    print(f"Kształt: {clean_df.shape}")
-    print(f"Zakres lat: {clean_df['year'].min()} – {clean_df['year'].max()}")
-    print(f"Oceny: min={clean_df['rating'].min()}, max={clean_df['rating'].max()}, "
-          f"mean={clean_df['rating'].mean():.2f}")

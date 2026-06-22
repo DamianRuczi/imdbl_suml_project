@@ -2,14 +2,14 @@
 
 System rekomendacji filmów oparty na podejściu content-based filtering.
 Dla podanego tytułu zwraca listę podobnych filmów na podstawie gatunków,
-reżysera, obsady i opisu — bez potrzeby historii użytkownika.
+reżysera, obsady i opisu bez potrzeby historii użytkownika.
 
 ## Technologie
 
-- **FastAPI** – serwowanie API REST
-- **scikit-learn** – TF-IDF + cosine similarity
-- **pandas** – przetwarzanie danych
-- **Docker** – konteneryzacja
+- **FastAPI** - serwowanie API REST
+- **scikit-learn** - TF-IDF + cosine similarity
+- **pandas** - przetwarzanie danych
+- **Docker** - konteneryzacja
 
 ## Struktura projektu
 
@@ -17,7 +17,8 @@ reżysera, obsady i opisu — bez potrzeby historii użytkownika.
 .
 ├── app/          # Warstwa API (FastAPI)
 ├── data/         # Preprocessing i EDA
-│   └── raw/      # Surowy dataset (nie w repo – patrz niżej)
+│   ├── raw/      # Dataset (final_dataset.parquet) – zawarty w repo
+│   └── eda.ipynb # Analiza eksploracyjna danych
 ├── model/        # Model rekomendacji
 │   ├── recommender.py  # Klasa ContentRecommender
 │   └── train.py        # Skrypt trenowania
@@ -29,28 +30,16 @@ reżysera, obsady i opisu — bez potrzeby historii użytkownika.
 
 ## Uruchomienie
 
-### Wymaganie wstępne – dataset
+Dataset (`final_dataset.parquet`, ~14 MB) jest już zawarty w repozytorium
+w `data/raw/` - nie wymaga ręcznego pobierania.
 
-Dataset pochodzi z Kaggle i ze względu na licencję nie jest dołączony do repozytorium.
-
-1. Pobierz plik `final_dataset.parquet` z:  
-   https://www.kaggle.com/datasets/raedaddala/imdb-movies-from-1960-to-2023
-
-2. Umieść go w katalogu:
-   ```
-   data/raw/final_dataset.parquet
-   ```
-
-### Opcja A – Docker (zalecana)
+### Opcja A – Docker (zalecana, zero konfiguracji)
 
 ```bash
-# 1. Wytrenuj model (jednorazowo, przed pierwszym uruchomieniem)
-docker-compose run --rm api python model/train.py
-
-# 2. Uruchom API
-docker-compose up
+docker-compose up --build
 ```
 
+Model jest trenowany automatycznie podczas budowania obrazu.
 API dostępne pod: http://localhost:8000
 
 ### Opcja B – lokalnie
@@ -69,8 +58,10 @@ make train
 
 # 3. Uruchom API
 make run
-# lub: uvicorn app.main:app --reload --port 8000
+# lub: uvicorn app.main:app --reload --port 8008
 ```
+
+API dostępne pod: http://localhost:8008
 
 ## Endpointy API
 
@@ -88,6 +79,9 @@ curl -X POST http://localhost:8000/recommend \
   -H "Content-Type: application/json" \
   -d '{"title": "Inception", "limit": 5}'
 ```
+
+> Przy lokalnym uruchomieniu (`make run`) API słucha na porcie **8008**,
+> w Dockerze na porcie **8008**.
 
 ### Przykład odpowiedzi
 
@@ -121,3 +115,10 @@ Parametr `year` jest opcjonalny — jeśli podany, filtruje wyniki do ±15 lat.
 
 Następnie wektoryzuje je TF-IDF (bigramy, max 25 000 cech) i oblicza cosine similarity.
 Wytrenowany model zapisywany jest do `model/artifacts/recommender.pkl`.
+
+## Jakość kodu
+
+```bash
+make lint
+# pylint app/ model/ data/preprocessing.py --fail-under=8
+```
