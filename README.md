@@ -10,6 +10,7 @@ reżysera, obsady i opisu bez potrzeby historii użytkownika.
 - **scikit-learn** - TF-IDF + cosine similarity
 - **pandas** - przetwarzanie danych
 - **Docker** - konteneryzacja
+- **Streamlit** - interfejs użytkownika
 
 ## Struktura projektu
 
@@ -40,7 +41,12 @@ docker-compose up --build
 ```
 
 Model jest trenowany automatycznie podczas budowania obrazu.
-API dostępne pod: http://localhost:8000
+
+Po uruchomieniu aplikacja dostępna jest pod adresami:
+- FastAPI: http://localhost:8000
+- Swagger UI: http://localhost:8000/docs
+- Streamlit: http://localhost:8501
+
 
 ### Opcja B – lokalnie
 
@@ -61,7 +67,16 @@ make run
 # lub: uvicorn app.main:app --reload --port 8008
 ```
 
-API dostępne pod: http://localhost:8008
+- API dostępne pod: http://localhost:8008
+- Swagger UI dostępny pod: http://localhost:8008/docs
+
+Aby uruchomić interfejs użytkownika Streamlit, w drugim terminalu wpisz:
+```bash
+streamlit run streamlit_app.py
+```
+
+Streamlit dostępny jest pod:
+http://localhost:8501
 
 ## Endpointy API
 
