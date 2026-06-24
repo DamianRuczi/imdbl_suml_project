@@ -47,3 +47,24 @@ def recommend(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Silnik rekomendacji jest niedostępny.",
         ) from error
+
+@app.get("/info")
+def info():
+    return {
+        "project": "IMDB Movie Recommender",
+        "model_type": "content-based filtering",
+        "vectorizer": "TF-IDF",
+        "similarity": "cosine similarity"
+    }
+
+@app.get("/examples")
+def examples():
+    return {
+        "examples": [
+            "Inception",
+            "Interstellar",
+            "The Matrix",
+            "Titanic",
+            "The Dark Knight"
+        ]
+    }

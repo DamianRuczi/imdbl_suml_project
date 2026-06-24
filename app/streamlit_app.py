@@ -19,11 +19,15 @@ import streamlit as st
 
 API_URL = os.environ.get("API_URL", "http://localhost:8008")
 
-st.set_page_config(page_title="IMDB Movie Recommender")
+st.set_page_config(
+    page_title="IMDB Movie Recommender",
+    page_icon = "🎬",
+    layout = "centered"
+)
 
-st.title("IMDB Movie Recommender")
+st.title("🎬 IMDB Movie Recommender")
 st.caption("System rekomendacji filmów content-based")
-
+st.caption("💡 Przykładowe tytuły: Inception, Interstellar, The Matrix, Titanic, The Dark Knight")
 
 def _api_available() -> bool:
     """Sprawdza, czy API odpowiada."""

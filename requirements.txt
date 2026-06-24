@@ -9,3 +9,5 @@ pyarrow>=14.0.0
 pylint
 streamlit>=1.30.0
 requests>=2.31.0
+pytest>=9.1.1
+httpx2>=2.4.0
