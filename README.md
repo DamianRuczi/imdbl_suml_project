@@ -48,8 +48,8 @@ docker-compose up --build
 Model jest trenowany automatycznie podczas budowania obrazu.
 
 Po uruchomieniu aplikacja dostępna jest pod adresami:
-- FastAPI: http://localhost:8000
-- Swagger UI: http://localhost:8000/docs
+- FastAPI: http://localhost:8008
+- Swagger UI: http://localhost:8008/docs
 - Streamlit: http://localhost:8501
 
 
@@ -77,7 +77,7 @@ make run
 
 Aby uruchomić interfejs użytkownika Streamlit, w drugim terminalu wpisz:
 ```bash
-streamlit run streamlit_app.py
+streamlit run app/streamlit_app.py
 ```
 
 Streamlit dostępny jest pod:
@@ -95,7 +95,7 @@ http://localhost:8501
 ### Przykład zapytania
 
 ```bash
-curl -X POST http://localhost:8000/recommend \
+curl -X POST http://localhost:8008/recommend \
   -H "Content-Type: application/json" \
   -d '{"title": "Inception", "limit": 5}'
 ```
@@ -121,6 +121,13 @@ curl -X POST http://localhost:8000/recommend \
 ```
 
 Parametr `year` jest opcjonalny — jeśli podany, filtruje wyniki do ±15 lat.
+
+## AutoML
+
+AutoML nie zostało zastosowane — podejście content-based filtering oparte na TF-IDF
+nie wymaga strojenia hiperparametrów przez AutoML. Wagi pól (genres, directors, stars,
+description) dobrane zostały ręcznie na podstawie znaczenia semantycznego każdego pola.
+Collaborative filtering nie zostało użyte ze względu na brak danych o historii użytkowników.
 
 ## Model ML
 

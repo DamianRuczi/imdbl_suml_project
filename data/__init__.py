@@ -1,1 +1,1 @@
-# TODO EDA
+# EDA notebook: data/eda.ipynb

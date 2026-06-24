@@ -48,23 +48,27 @@ def recommend(
             detail="Silnik rekomendacji jest niedostępny.",
         ) from error
 
+
 @app.get("/info")
-def info():
+def info() -> dict:
+    """Zwraca metadane o modelu i projekcie."""
     return {
         "project": "IMDB Movie Recommender",
         "model_type": "content-based filtering",
         "vectorizer": "TF-IDF",
-        "similarity": "cosine similarity"
+        "similarity": "cosine similarity",
     }
 
+
 @app.get("/examples")
-def examples():
+def examples() -> dict:
+    """Zwraca przykładowe tytuły filmów dostępnych w bazie."""
     return {
         "examples": [
             "Inception",
             "Interstellar",
             "The Matrix",
             "Titanic",
-            "The Dark Knight"
+            "The Dark Knight",
         ]
     }
