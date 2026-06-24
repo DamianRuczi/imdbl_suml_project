@@ -29,6 +29,11 @@ reżysera, obsady i opisu bez potrzeby historii użytkownika.
 └── requirements.txt
 ```
 
+## Dane
+Projekt wykorzystuje zbiór danych filmowych IMDB pochodzący z Kaggle.
+
+Źródło danych: [Kaggle – IMDB Movies Dataset](https://www.kaggle.com/datasets/raedaddala/imdb-movies-from-1960-to-2023/data)
+
 ## Uruchomienie
 
 Dataset (`final_dataset.parquet`, ~14 MB) jest już zawarty w repozytorium
