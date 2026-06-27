@@ -83,6 +83,24 @@ streamlit run app/streamlit_app.py
 Streamlit dostępny jest pod:
 http://localhost:8501
 
+## Korzystanie z aplikacji Streamlit
+
+Po uruchomieniu aplikacji otwórz `http://localhost:8501`.
+
+![Widok aplikacji Streamlit](docs/images/streamlit_01.png)
+
+1. Wpisz tytuł filmu, np. `Inception`.
+2. Opcjonalnie podaj rok produkcji.
+3. Wybierz liczbę rekomendacji.
+4. Kliknij **Szukaj rekomendacji**.
+5. Odczytaj listę podobnych filmów wraz z oceną IMDB i wynikiem podobieństwa.
+
+Przykładowe tytuły: `Inception`, `Interstellar`, `The Matrix`, `Titanic`, `The Dark Knight`.
+
+Dodatkowo w sekcji **Lista wszystkich filmów w bazie** można sprawdzić dostępne tytuły.
+
+![Widok aplikacji Streamlit](docs/images/streamlit_02.png)
+
 ## Endpointy API
 
 | Metoda | Endpoint     | Opis                              |
@@ -149,3 +167,4 @@ Wytrenowany model zapisywany jest do `model/artifacts/recommender.pkl`.
 make lint
 # pylint app/ model/ data/preprocessing.py --fail-under=8
 ```
+
